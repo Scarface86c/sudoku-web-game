@@ -1,0 +1,655 @@
+/* SuperSudoku v2.0.0 - Additional Styles for GitHub Issues */
+
+/* ===== SUPERSUDOKU BRANDING ===== */
+.game-title {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.version-badge {
+    display: inline-block;
+    background: var(--accent-color);
+    color: white;
+    font-size: 0.5em;
+    padding: 2px 6px;
+    border-radius: 12px;
+    margin-left: 8px;
+    font-weight: 600;
+    vertical-align: top;
+}
+
+/* ===== ISSUE #1 FIX: DARK MODE NUMBER VISIBILITY ===== */
+.theme-dark .number-btn {
+    color: var(--gray-100) !important;
+    background-color: var(--gray-700);
+    border: 2px solid var(--gray-500);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .number-btn:hover {
+    background-color: var(--gray-600);
+    border-color: var(--primary-color);
+    color: white !important;
+}
+
+.theme-dark .number-btn.selected {
+    background-color: var(--primary-color);
+    border-color: var(--primary-hover);
+    color: white !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+}
+
+/* ===== ISSUE #2 FIX: NUMBER PAD LAYOUT OPTIMIZATION ===== */
+.number-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+.number-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+/* 9x9 Grid - Single row layout */
+.game-board[data-grid-size="9"] ~ .input-panel .number-row {
+    gap: 4px;
+}
+
+.game-board[data-grid-size="9"] ~ .input-panel .number-btn {
+    min-width: 44px;
+    height: 44px;
+    font-size: 1.1em;
+}
+
+/* 16x16 Grid - Two rows: numbers and letters */
+.game-board[data-grid-size="16"] ~ .input-panel .number-row:first-child {
+    margin-bottom: 4px;
+}
+
+.game-board[data-grid-size="16"] ~ .input-panel .number-btn {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+/* Smaller grids - centered layout */
+.game-board[data-grid-size="4"] ~ .input-panel .number-btn,
+.game-board[data-grid-size="6"] ~ .input-panel .number-btn {
+    min-width: 50px;
+    height: 50px;
+    font-size: 1.2em;
+}
+
+/* ===== ISSUE #3: KIDS MODE STYLES ===== */
+.mode-kids .game-board {
+    background: linear-gradient(45deg, #fff9e6, #f0f9ff);
+    border-radius: 16px;
+    padding: 8px;
+}
+
+.color-btn {
+    border-radius: 50% !important;
+    width: 48px;
+    height: 48px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.color-btn.selected {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.8), 0 0 0 6px var(--primary-color);
+}
+
+.number-overlay {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: white;
+    color: var(--gray-700);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    border: 1px solid var(--gray-300);
+}
+
+.color-cell {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.color-number {
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    font-size: 0.9em;
+}
+
+.color-mode-cell {
+    border-width: 3px !important;
+    border-style: solid !important;
+}
+
+/* Symbol Mode */
+.symbol-btn {
+    font-size: 1.5em;
+    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+    border: 2px solid #d97706;
+}
+
+.symbol-btn:hover {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    transform: scale(1.05);
+}
+
+.symbol-btn.selected {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+}
+
+.mode-symbols .game-cell {
+    font-size: 1.2em;
+}
+
+/* Kids mode hints */
+.hint-color {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin: 1px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.hint-symbol {
+    font-size: 0.8em;
+    margin: 0 2px;
+}
+
+/* ===== ISSUE #4: HIGHSCORE & DATABASE STYLES ===== */
+.btn-accent {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    color: white;
+    border: none;
+}
+
+.btn-accent:hover {
+    background: linear-gradient(135deg, var(--accent-hover), #b45309);
+    transform: translateY(-1px);
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+}
+
+.player-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.player-name {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Highscore Modal */
+.modal-content.large {
+    max-width: 900px;
+    width: 90vw;
+}
+
+.highscore-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.highscore-filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.score-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.score-table th,
+.score-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.score-table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.rank-1 {
+    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+}
+
+.rank-2 {
+    background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+}
+
+.rank-3 {
+    background: linear-gradient(135deg, #fdf2f8, #f9a8d4);
+}
+
+.rank-cell {
+    text-align: center;
+    font-weight: bold;
+}
+
+.difficulty-easy { color: #059669; }
+.difficulty-medium { color: #d97706; }
+.difficulty-hard { color: #dc2626; }
+.difficulty-hardcore { color: #7c2d12; }
+
+.no-scores {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-secondary);
+}
+
+.no-scores-icon {
+    font-size: 3em;
+    margin-bottom: 16px;
+}
+
+/* Achievement Popup */
+.achievement-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: var(--z-tooltip);
+    max-width: 300px;
+}
+
+.achievement-popup.show {
+    transform: translateX(0);
+}
+
+.achievement-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.achievement-icon {
+    font-size: 2em;
+}
+
+.achievement-text h3 {
+    font-size: 1em;
+    margin-bottom: 4px;
+}
+
+.achievement-text p {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+/* ===== ISSUE #5 FIX: MOBILE RESPONSIVENESS ===== */
+@media (max-width: 768px) {
+    /* Add proper margins and centering */
+    .game-container {
+        padding: 12px 16px;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .game-board-section {
+        padding: 8px;
+        margin: 0 auto;
+        max-width: 100vw;
+        overflow: visible;
+    }
+    
+    .game-board {
+        margin: 0 auto 16px;
+        max-width: calc(100vw - 32px);
+        box-sizing: border-box;
+    }
+    
+    /* Prevent right-edge cutoff on S21Ultra and similar */
+    .game-board[data-grid-size="9"] {
+        max-width: min(400px, calc(100vw - 32px));
+    }
+    
+    .game-board[data-grid-size="16"] {
+        max-width: min(480px, calc(100vw - 24px));
+        font-size: 0.7em;
+    }
+    
+    /* Better input panel layout on mobile */
+    .input-panel {
+        padding: 12px 8px;
+        max-width: 100%;
+        overflow: visible;
+    }
+    
+    .number-buttons {
+        max-width: 100%;
+    }
+    
+    .number-row {
+        justify-content: center;
+        max-width: 100%;
+    }
+    
+    /* Responsive button sizes */
+    .game-board[data-grid-size="4"] ~ .input-panel .number-btn {
+        min-width: 48px;
+        height: 48px;
+    }
+    
+    .game-board[data-grid-size="6"] ~ .input-panel .number-btn {
+        min-width: 44px;
+        height: 44px;
+    }
+    
+    .game-board[data-grid-size="9"] ~ .input-panel .number-btn {
+        min-width: 38px;
+        height: 38px;
+        font-size: 1em;
+    }
+    
+    .game-board[data-grid-size="16"] ~ .input-panel .number-btn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8em;
+    }
+    
+    /* Header improvements */
+    .game-header {
+        padding: 8px 16px;
+    }
+    
+    .header-content {
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .game-title {
+        font-size: 1.5em;
+    }
+    
+    .version-badge {
+        font-size: 0.45em;
+        padding: 1px 4px;
+    }
+    
+    .player-info {
+        margin-left: 8px;
+    }
+    
+    .player-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+    
+    /* Control panel mobile optimization */
+    .control-panel {
+        padding: 12px 8px;
+    }
+    
+    .settings-group {
+        gap: 12px;
+    }
+    
+    .game-controls {
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .btn {
+        min-width: auto;
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+    
+    /* Modal improvements for mobile */
+    .modal-content {
+        margin: 20px 16px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+    
+    .modal-content.large {
+        width: calc(100vw - 32px);
+    }
+    
+    /* Highscore table mobile */
+    .score-table {
+        font-size: 0.8em;
+    }
+    
+    .score-table th,
+    .score-table td {
+        padding: 6px 8px;
+    }
+    
+    .highscore-tabs {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+    
+    .tab-btn {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+    
+    .highscore-filters {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    .highscore-filters select {
+        width: 100%;
+    }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .game-board[data-grid-size="9"] {
+        max-width: calc(100vw - 24px);
+    }
+    
+    .game-board[data-grid-size="16"] {
+        max-width: calc(100vw - 16px);
+        font-size: 0.6em;
+    }
+    
+    .game-board[data-grid-size="16"] ~ .input-panel .number-btn {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.75em;
+    }
+    
+    .game-title {
+        font-size: 1.3em;
+    }
+    
+    .version-badge {
+        display: none; /* Hide on very small screens */
+    }
+}
+
+/* Landscape mobile orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .game-container {
+        padding: 8px 12px;
+    }
+    
+    .game-header {
+        padding: 6px 16px;
+    }
+    
+    .game-title {
+        font-size: 1.2em;
+    }
+    
+    .control-panel {
+        padding: 8px;
+    }
+    
+    .game-stats {
+        flex-direction: row;
+        gap: 16px;
+    }
+    
+    .modal-content {
+        margin: 10px 16px;
+        max-height: calc(100vh - 20px);
+    }
+}
+
+/* ===== ANIMATIONS & TRANSITIONS ===== */
+.game-cell,
+.number-btn,
+.color-btn,
+.symbol-btn {
+    transition: all var(--transition-fast);
+}
+
+.achievement-popup {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Color mode specific animations */
+.mode-kids .game-cell {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-kids .game-cell:hover {
+    transform: scale(1.02);
+}
+
+.mode-symbols .game-cell:hover {
+    transform: scale(1.05);
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+.theme-dark .sr-only {
+    color: var(--gray-100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .achievement-popup {
+        animation: none;
+        transition: none;
+    }
+    
+    .color-btn:hover,
+    .symbol-btn:hover,
+    .game-cell:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .color-btn {
+        border-width: 3px !important;
+    }
+    
+    .number-overlay {
+        border-width: 2px;
+        background: var(--white);
+        color: var(--gray-900);
+    }
+    
+    .theme-dark .number-btn {
+        border-width: 3px;
+    }
+}

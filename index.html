@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Modern responsive Sudoku game with multiple grid sizes and difficulty levels">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="SuperSudoku - Advanced puzzle game with multiple modes, kids features, and highscore system">
+    <meta name="theme-color" content="#8b5cf6">
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Sudoku Game">
+    <meta name="apple-mobile-web-app-title" content="SuperSudoku">
     
-    <title>Sudoku Game - Classic Number Puzzle</title>
+    <title>SuperSudoku - Advanced Number Puzzle Game</title>
     
     <!-- Preload Critical Resources -->
     <link rel="preload" href="css/game.css" as="style">
@@ -21,6 +21,7 @@
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/supersudoku-additions.css">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
@@ -34,8 +35,9 @@
     <header class="game-header" role="banner">
         <div class="header-content">
             <h1 class="game-title">
-                <span class="title-icon" aria-hidden="true">🔢</span>
-                Sudoku
+                <span class="title-icon" aria-hidden="true">🎯</span>
+                SuperSudoku
+                <span class="version-badge" id="version-badge">v2.0.0</span>
             </h1>
             <button 
                 class="theme-toggle" 
@@ -57,6 +59,16 @@
             
             <!-- Game Settings -->
             <div class="settings-group">
+                <div class="setting-item">
+                    <label for="game-mode-select" class="setting-label">Game Mode</label>
+                    <select id="game-mode-select" class="setting-select" aria-describedby="mode-help">
+                        <option value="classic" selected>Classic Numbers</option>
+                        <option value="kids">Kids Mode (Colors)</option>
+                        <option value="symbols">Symbol Mode</option>
+                    </select>
+                    <div id="mode-help" class="setting-help">Choose game mode and visual style</div>
+                </div>
+                
                 <div class="setting-item">
                     <label for="difficulty-select" class="setting-label">Difficulty</label>
                     <select id="difficulty-select" class="setting-select" aria-describedby="difficulty-help">
@@ -103,6 +115,11 @@
                     <span class="btn-icon" aria-hidden="true">🗑️</span>
                     Clear
                 </button>
+                
+                <button type="button" class="btn btn-accent" id="highscore-btn">
+                    <span class="btn-icon" aria-hidden="true">🏆</span>
+                    Highscore
+                </button>
             </div>
 
             <!-- Game Stats -->
@@ -148,7 +165,23 @@
             <div class="input-panel" role="region" aria-labelledby="input-title">
                 <h3 id="input-title" class="sr-only">Number Input</h3>
                 <div class="number-buttons" role="group" aria-label="Number selection buttons">
-                    <!-- Number buttons will be dynamically generated -->
+                    <!-- Number buttons will be dynamically generated based on game mode -->
+                </div>
+                
+                <!-- Game Mode Indicators -->
+                <div class="mode-indicators" id="mode-indicators">
+                    <div class="mode-indicator active" data-mode="classic">
+                        <span class="mode-icon">🔢</span>
+                        <span class="mode-label">Numbers</span>
+                    </div>
+                    <div class="mode-indicator" data-mode="kids">
+                        <span class="mode-icon">🎨</span>
+                        <span class="mode-label">Colors</span>
+                    </div>
+                    <div class="mode-indicator" data-mode="symbols">
+                        <span class="mode-icon">🦋</span>
+                        <span class="mode-label">Symbols</span>
+                    </div>
                 </div>
                 
                 <div class="input-controls">
@@ -213,6 +246,10 @@
     </div>
 
     <!-- Scripts -->
+    <script src="version.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/highscore.js"></script>
+    <script src="js/kids-mode.js"></script>
     <script src="js/controls.js"></script>
     <script src="js/game.js"></script>
     
