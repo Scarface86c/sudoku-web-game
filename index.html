@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Modern responsive Sudoku game with multiple grid sizes and difficulty levels">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Sudoku Game">
+    
+    <title>Sudoku Game - Classic Number Puzzle</title>
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="css/game.css" as="style">
+    <link rel="preload" href="js/game.js" as="script">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/game.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+</head>
+<body class="theme-light">
+    <!-- Skip Link for Accessibility -->
+    <a href="#game-board" class="skip-link">Skip to game board</a>
+    
+    <!-- Header -->
+    <header class="game-header" role="banner">
+        <div class="header-content">
+            <h1 class="game-title">
+                <span class="title-icon" aria-hidden="true">🔢</span>
+                Sudoku
+            </h1>
+            <button 
+                class="theme-toggle" 
+                type="button" 
+                aria-label="Toggle dark mode"
+                title="Switch between light and dark themes"
+            >
+                <span class="theme-icon light-icon" aria-hidden="true">☀️</span>
+                <span class="theme-icon dark-icon" aria-hidden="true">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="game-container" role="main">
+        <!-- Control Panel -->
+        <section class="control-panel" role="region" aria-labelledby="controls-title">
+            <h2 id="controls-title" class="sr-only">Game Controls</h2>
+            
+            <!-- Game Settings -->
+            <div class="settings-group">
+                <div class="setting-item">
+                    <label for="difficulty-select" class="setting-label">Difficulty</label>
+                    <select id="difficulty-select" class="setting-select" aria-describedby="difficulty-help">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                        <option value="hardcore">Hardcore</option>
+                    </select>
+                    <div id="difficulty-help" class="setting-help">Choose puzzle difficulty level</div>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="grid-size-select" class="setting-label">Grid Size</label>
+                    <select id="grid-size-select" class="setting-select" aria-describedby="grid-help">
+                        <option value="4">4×4</option>
+                        <option value="6">6×6</option>
+                        <option value="9" selected>9×9</option>
+                        <option value="16">16×16</option>
+                    </select>
+                    <div id="grid-help" class="setting-help">Select grid dimensions</div>
+                </div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <button type="button" class="btn btn-primary" id="new-game-btn">
+                    <span class="btn-icon" aria-hidden="true">🎯</span>
+                    New Game
+                </button>
+                
+                <button type="button" class="btn btn-secondary" id="hint-btn" aria-describedby="hint-count">
+                    <span class="btn-icon" aria-hidden="true">💡</span>
+                    Hint
+                    <span class="btn-badge" id="hint-count" aria-label="hints remaining">3</span>
+                </button>
+                
+                <button type="button" class="btn btn-secondary" id="pause-btn">
+                    <span class="btn-icon pause-icon" aria-hidden="true">⏸️</span>
+                    <span class="btn-icon play-icon" aria-hidden="true">▶️</span>
+                    <span class="btn-text">Pause</span>
+                </button>
+                
+                <button type="button" class="btn btn-outline" id="clear-btn">
+                    <span class="btn-icon" aria-hidden="true">🗑️</span>
+                    Clear
+                </button>
+            </div>
+
+            <!-- Game Stats -->
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Time</div>
+                    <div class="stat-value" id="timer" aria-live="polite">00:00</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Progress</div>
+                    <div class="stat-value">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <span id="progress-text" class="progress-text">0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Errors</div>
+                    <div class="stat-value" id="error-count" aria-live="polite">0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Board Section -->
+        <section class="game-board-section" role="region" aria-labelledby="board-title">
+            <h2 id="board-title" class="sr-only">Sudoku Game Board</h2>
+            
+            <!-- Game Board -->
+            <div 
+                class="game-board" 
+                id="game-board" 
+                role="grid" 
+                aria-label="Sudoku puzzle grid"
+                data-grid-size="9"
+            >
+                <!-- Grid cells will be dynamically generated -->
+            </div>
+
+            <!-- Number Input Panel -->
+            <div class="input-panel" role="region" aria-labelledby="input-title">
+                <h3 id="input-title" class="sr-only">Number Input</h3>
+                <div class="number-buttons" role="group" aria-label="Number selection buttons">
+                    <!-- Number buttons will be dynamically generated -->
+                </div>
+                
+                <div class="input-controls">
+                    <button type="button" class="btn btn-outline" id="notes-btn" aria-pressed="false">
+                        <span class="btn-icon" aria-hidden="true">📝</span>
+                        Notes
+                    </button>
+                    
+                    <button type="button" class="btn btn-outline" id="erase-btn">
+                        <span class="btn-icon" aria-hidden="true">⌫</span>
+                        Erase
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Game Status Messages -->
+    <div class="status-messages" aria-live="polite" aria-atomic="true">
+        <div class="message success" id="success-message" role="alert"></div>
+        <div class="message error" id="error-message" role="alert"></div>
+        <div class="message info" id="info-message" role="status"></div>
+    </div>
+
+    <!-- Game Complete Modal -->
+    <div class="modal-overlay" id="complete-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">🎉 Congratulations!</h2>
+                <button type="button" class="modal-close" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="completion-message">You've successfully completed the puzzle!</p>
+                <div class="completion-stats">
+                    <div class="completion-stat">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value" id="final-time">--:--</span>
+                    </div>
+                    <div class="completion-stat">
+                        <span class="stat-label">Difficulty:</span>
+                        <span class="stat-value" id="final-difficulty">Medium</span>
+                    </div>
+                    <div class="completion-stat">
+                        <span class="stat-label">Grid Size:</span>
+                        <span class="stat-value" id="final-grid-size">9×9</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="play-again-btn">Play Again</button>
+                <button type="button" class="btn btn-outline" id="share-btn">Share Result</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading-overlay" id="loading-overlay" aria-hidden="true">
+        <div class="loading-spinner" role="status" aria-label="Loading">
+            <div class="spinner"></div>
+            <span class="loading-text">Generating puzzle...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/controls.js"></script>
+    <script src="js/game.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
