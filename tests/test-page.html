@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperSudoku Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #8b5cf6;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-button {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .test-button:hover:not(:disabled) {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .test-button.running {
+            background: #f59e0b;
+        }
+        
+        .test-button.success {
+            background: #10b981;
+        }
+        
+        .test-button.error {
+            background: #ef4444;
+        }
+        
+        .results-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #10b981);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .console-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #8b5cf6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .summary-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #8b5cf6;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .export-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+        
+        .export-btn:hover {
+            background: #475569;
+        }
+        
+        .issue-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .issue-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+        
+        .issue-card.failed {
+            border-left-color: #ef4444;
+        }
+        
+        .issue-card.partial {
+            border-left-color: #f59e0b;
+        }
+        
+        .issue-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .issue-stats {
+            font-size: 0.9em;
+            color: #64748b;
+        }
+        
+        @media (max-width: 768px) {
+            .test-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 SuperSudoku Test Suite</h1>
+            <p>Comprehensive testing for GitHub Issues #6, #7, #8 and cross-browser compatibility</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-controls">
+                <button class="test-button" id="run-all-tests">
+                    <span>🚀</span>
+                    Run All Tests
+                </button>
+                <button class="test-button" id="run-database-tests">
+                    <span>💾</span>
+                    Database Tests (Issue #8)
+                </button>
+                <button class="test-button" id="run-layout-tests">
+                    <span>📐</span>
+                    Layout Tests (Issue #7)
+                </button>
+                <button class="test-button" id="run-kids-tests">
+                    <span>🎨</span>
+                    Kids Mode Tests (Issue #6)
+                </button>
+                <button class="test-button" id="run-browser-tests">
+                    <span>🌐</span>
+                    Cross-Browser Tests
+                </button>
+                <button class="test-button" id="clear-results">
+                    <span>🗑️</span>
+                    Clear Results
+                </button>
+            </div>
+            
+            <div class="results-container">
+                <div class="results-header">
+                    <h3>📊 Test Results</h3>
+                    <div class="export-buttons">
+                        <button class="export-btn" id="export-json">Export JSON</button>
+                        <button class="export-btn" id="export-html">Export HTML</button>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                
+                <div class="test-summary" id="test-summary" style="display: none;">
+                    <div class="summary-card">
+                        <div class="summary-value" id="total-tests">0</div>
+                        <div class="summary-label">Total Tests</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value" id="passed-tests">0</div>
+                        <div class="summary-label">Passed</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value" id="failed-tests">0</div>
+                        <div class="summary-label">Failed</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value" id="success-rate">0%</div>
+                        <div class="summary-label">Success Rate</div>
+                    </div>
+                </div>
+                
+                <div class="issue-status" id="issue-status" style="display: none;"></div>
+                
+                <div class="console-output" id="console-output">
+                    Welcome to SuperSudoku Test Suite! 🎯
+                    
+                    This comprehensive testing system validates:
+                    • Issue #8: Database and Highscore functionality
+                    • Issue #7: Horizontal layout in Kids and Symbol modes  
+                    • Issue #6: Kids Mode color-only gameplay
+                    • Cross-browser compatibility
+                    • Mobile device support
+                    • Accessibility compliance
+                    
+                    Click "Run All Tests" to start comprehensive testing...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load SuperSudoku components -->
+    <script src="../js/database.js"></script>
+    <script src="../js/highscore.js"></script>
+    <script src="../js/kids-mode.js"></script>
+    
+    <!-- Load test suites -->
+    <script src="database-tests.js"></script>
+    <script src="layout-tests.js"></script>
+    <script src="kids-mode-tests.js"></script>
+    <script src="cross-browser-tests.js"></script>
+    <script src="test-runner.js"></script>
+    
+    <script>
+        class TestPageController {
+            constructor() {
+                this.currentResults = null;
+                this.originalConsole = { ...console };
+                this.setupConsoleCapture();
+                this.setupEventListeners();
+            }
+            
+            setupConsoleCapture() {
+                const consoleOutput = document.getElementById('console-output');
+                
+                ['log', 'warn', 'error', 'info'].forEach(method => {
+                    console[method] = (...args) => {
+                        this.originalConsole[method](...args);
+                        
+                        const message = args.join(' ');
+                        const timestamp = new Date().toLocaleTimeString();
+                        
+                        // Style different log levels
+                        let color = '#e2e8f0';
+                        if (method === 'warn') color = '#fbbf24';
+                        if (method === 'error') color = '#ef4444';
+                        if (method === 'info') color = '#3b82f6';
+                        
+                        consoleOutput.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+                        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                    };
+                });
+            }
+            
+            setupEventListeners() {
+                document.getElementById('run-all-tests').onclick = () => this.runAllTests();
+                document.getElementById('run-database-tests').onclick = () => this.runSingleSuite('database');
+                document.getElementById('run-layout-tests').onclick = () => this.runSingleSuite('layout');
+                document.getElementById('run-kids-tests').onclick = () => this.runSingleSuite('kids');
+                document.getElementById('run-browser-tests').onclick = () => this.runSingleSuite('browser');
+                document.getElementById('clear-results').onclick = () => this.clearResults();
+                document.getElementById('export-json').onclick = () => this.exportJSON();
+                document.getElementById('export-html').onclick = () => this.exportHTML();
+            }
+            
+            async runAllTests() {
+                console.log('🚀 Starting comprehensive test suite...');
+                
+                this.setButtonState('run-all-tests', 'running');
+                this.updateProgress(0);
+                
+                try {
+                    const runner = new SuperSudokuTestRunner();
+                    this.currentResults = await runner.runAllTests();
+                    
+                    this.updateSummary(this.currentResults);
+                    this.updateIssueStatus(this.currentResults);
+                    this.setButtonState('run-all-tests', 'success');
+                    this.updateProgress(100);
+                    
+                } catch (error) {
+                    console.error('Test suite failed:', error);
+                    this.setButtonState('run-all-tests', 'error');
+                }
+            }
+            
+            async runSingleSuite(suiteType) {
+                const buttonId = `run-${suiteType}-tests`;
+                this.setButtonState(buttonId, 'running');
+                
+                try {
+                    let suite, suiteName;
+                    
+                    switch (suiteType) {
+                        case 'database':
+                            suite = new DatabaseTestSuite();
+                            suiteName = 'Database Tests (Issue #8)';
+                            break;
+                        case 'layout':
+                            suite = new LayoutTestSuite();
+                            suiteName = 'Layout Tests (Issue #7)';
+                            break;
+                        case 'kids':
+                            suite = new KidsModeTestSuite();
+                            suiteName = 'Kids Mode Tests (Issue #6)';
+                            break;
+                        case 'browser':
+                            suite = new CrossBrowserTestSuite();
+                            suiteName = 'Cross-Browser Tests';
+                            break;
+                    }
+                    
+                    console.log(`🧪 Running ${suiteName}...`);
+                    const results = await suite.runAllTests();
+                    
+                    this.setButtonState(buttonId, results.summary.failed === 0 ? 'success' : 'error');
+                    console.log(`✅ ${suiteName} completed: ${results.summary.passed}/${results.summary.total} passed`);
+                    
+                } catch (error) {
+                    console.error(`❌ ${suiteName} failed:`, error);
+                    this.setButtonState(buttonId, 'error');
+                }
+            }
+            
+            setButtonState(buttonId, state) {
+                const button = document.getElementById(buttonId);
+                button.classList.remove('running', 'success', 'error');
+                
+                if (state !== 'normal') {
+                    button.classList.add(state);
+                    button.disabled = state === 'running';
+                }
+                
+                const icons = {
+                    running: '🔄',
+                    success: '✅',
+                    error: '❌'
+                };
+                
+                if (icons[state]) {
+                    button.querySelector('span').textContent = icons[state];
+                }
+                
+                // Reset after success/error
+                if (state === 'success' || state === 'error') {
+                    setTimeout(() => {
+                        button.classList.remove(state);
+                        button.disabled = false;
+                        this.resetButtonIcon(buttonId);
+                    }, 3000);
+                }
+            }
+            
+            resetButtonIcon(buttonId) {
+                const icons = {
+                    'run-all-tests': '🚀',
+                    'run-database-tests': '💾',
+                    'run-layout-tests': '📐',
+                    'run-kids-tests': '🎨',
+                    'run-browser-tests': '🌐'
+                };
+                
+                const button = document.getElementById(buttonId);
+                if (button && icons[buttonId]) {
+                    button.querySelector('span').textContent = icons[buttonId];
+                }
+            }
+            
+            updateProgress(percent) {
+                document.getElementById('progress-fill').style.width = `${percent}%`;
+            }
+            
+            updateSummary(results) {
+                document.getElementById('test-summary').style.display = 'grid';
+                document.getElementById('total-tests').textContent = results.summary.totalTests;
+                document.getElementById('passed-tests').textContent = results.summary.totalPassed;
+                document.getElementById('failed-tests').textContent = results.summary.totalFailed;
+                document.getElementById('success-rate').textContent = `${results.summary.overallSuccessRate}%`;
+            }
+            
+            updateIssueStatus(results) {
+                const container = document.getElementById('issue-status');
+                container.style.display = 'grid';
+                container.innerHTML = '';
+                
+                Object.entries(results.summary.byIssue).forEach(([issueNum, data]) => {
+                    const card = document.createElement('div');
+                    card.className = `issue-card ${data.failed > 0 ? 'failed' : data.partial > 0 ? 'partial' : ''}`;
+                    
+                    card.innerHTML = `
+                        <div class="issue-title">Issue #${issueNum}: ${data.name}</div>
+                        <div class="issue-stats">
+                            ${data.passed}/${data.total} tests passed (${data.successRate}%)
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            }
+            
+            clearResults() {
+                document.getElementById('console-output').innerHTML = 'Console cleared. Ready for new tests...\n';
+                document.getElementById('test-summary').style.display = 'none';
+                document.getElementById('issue-status').style.display = 'none';
+                this.updateProgress(0);
+                this.currentResults = null;
+            }
+            
+            exportJSON() {
+                if (!this.currentResults) {
+                    alert('No test results to export. Run tests first.');
+                    return;
+                }
+                
+                const blob = new Blob([JSON.stringify(this.currentResults, null, 2)], {
+                    type: 'application/json'
+                });
+                this.downloadFile(blob, `SuperSudoku_TestResults_${new Date().toISOString().split('T')[0]}.json`);
+            }
+            
+            exportHTML() {
+                if (!this.currentResults) {
+                    alert('No test results to export. Run tests first.');
+                    return;
+                }
+                
+                const runner = new SuperSudokuTestRunner();
+                runner.generateHTMLReport(this.currentResults);
+            }
+            
+            downloadFile(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+        // Initialize test page controller
+        document.addEventListener('DOMContentLoaded', () => {
+            new TestPageController();
+        });
+    </script>
+</body>
+</html>

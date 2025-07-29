@@ -5,138 +5,355 @@ class SuperSudokuDatabase {
     constructor() {
         this.dbName = 'SuperSudokuDB';
         this.version = '2.0.0';
+        this.isLocalStorageAvailable = this.checkLocalStorageSupport();
+        this.fallbackStorage = new Map(); // In-memory fallback
         this.initDatabase();
     }
 
-    initDatabase() {
-        // Initialize database structure if not exists
-        if (!localStorage.getItem(`${this.dbName}_initialized`)) {
-            this.createTables();
-            localStorage.setItem(`${this.dbName}_initialized`, 'true');
-            localStorage.setItem(`${this.dbName}_version`, this.version);
+    /**
+     * Check if localStorage is available and functional
+     * @returns {boolean} true if localStorage is supported
+     */
+    checkLocalStorageSupport() {
+        try {
+            if (typeof Storage === 'undefined' || !window.localStorage) {
+                console.warn('SuperSudoku: localStorage not available, using memory fallback');
+                return false;
+            }
+            
+            // Test localStorage functionality
+            const testKey = '__supersudoku_test__';
+            localStorage.setItem(testKey, 'test');
+            const testValue = localStorage.getItem(testKey);
+            localStorage.removeItem(testKey);
+            
+            if (testValue !== 'test') {
+                console.warn('SuperSudoku: localStorage test failed, using memory fallback');
+                return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.warn('SuperSudoku: localStorage error, using memory fallback:', error);
+            return false;
         }
     }
 
-    createTables() {
-        // Players table
-        const players = {
-            structure: {
-                id: 'string',
-                name: 'string', 
-                email: 'string',
-                avatar: 'string',
-                created: 'timestamp',
-                lastPlayed: 'timestamp',
-                totalGames: 'number',
-                totalWins: 'number',
-                favoriteMode: 'string',
-                favoriteGridSize: 'number'
-            },
-            data: []
-        };
-
-        // Scores table
-        const scores = {
-            structure: {
-                id: 'string',
-                playerId: 'string',
-                playerName: 'string',
-                gameMode: 'string', // classic, kids, symbols
-                gridSize: 'number', // 4, 6, 9, 16
-                difficulty: 'string', // easy, medium, hard, hardcore
-                time: 'number', // seconds
-                hints: 'number',
-                errors: 'number',
-                score: 'number', // calculated score
-                completed: 'boolean',
-                date: 'timestamp'
-            },
-            data: []
-        };
-
-        // Game sessions table
-        const sessions = {
-            structure: {
-                id: 'string',
-                playerId: 'string',
-                startTime: 'timestamp',
-                endTime: 'timestamp',
-                gameMode: 'string',
-                gridSize: 'number',
-                difficulty: 'string',
-                gameState: 'object', // serialized game state
-                completed: 'boolean'
-            },
-            data: []
-        };
-
-        // Settings table
-        const settings = {
-            structure: {
-                playerId: 'string',
-                theme: 'string',
-                soundEnabled: 'boolean',
-                animationsEnabled: 'boolean',
-                autoSave: 'boolean',
-                showTimer: 'boolean',
-                showHints: 'boolean',
-                defaultMode: 'string',
-                defaultGridSize: 'number',
-                defaultDifficulty: 'string'
-            },
-            data: []
-        };
-
-        // Statistics table
-        const statistics = {
-            structure: {
-                playerId: 'string',
-                gameMode: 'string',
-                gridSize: 'number',
-                difficulty: 'string',
-                gamesPlayed: 'number',
-                gamesCompleted: 'number',
-                bestTime: 'number',
-                averageTime: 'number',
-                totalTime: 'number',
-                bestScore: 'number',
-                averageScore: 'number',
-                totalHints: 'number',
-                totalErrors: 'number',
-                streakCurrent: 'number',
-                streakBest: 'number',
-                lastPlayed: 'timestamp'
-            },
-            data: []
-        };
-
-        // Save tables to localStorage
-        localStorage.setItem(`${this.dbName}_players`, JSON.stringify(players));
-        localStorage.setItem(`${this.dbName}_scores`, JSON.stringify(scores));
-        localStorage.setItem(`${this.dbName}_sessions`, JSON.stringify(sessions));
-        localStorage.setItem(`${this.dbName}_settings`, JSON.stringify(settings));
-        localStorage.setItem(`${this.dbName}_statistics`, JSON.stringify(statistics));
-
-        console.log('SuperSudoku Database initialized successfully');
+    /**
+     * Initialize database structure automatically on first load
+     */
+    initDatabase() {
+        try {
+            const isInitialized = this.getItem(`${this.dbName}_initialized`);
+            const currentVersion = this.getItem(`${this.dbName}_version`);
+            
+            if (!isInitialized || currentVersion !== this.version) {
+                console.log('SuperSudoku: Initializing database...');
+                this.createTables();
+                this.setItem(`${this.dbName}_initialized`, 'true');
+                this.setItem(`${this.dbName}_version`, this.version);
+                console.log('SuperSudoku: Database initialized successfully');
+            } else {
+                console.log('SuperSudoku: Database already initialized, version:', currentVersion);
+                // Verify all tables exist, recreate missing ones
+                this.verifyTables();
+            }
+        } catch (error) {
+            console.error('SuperSudoku: Database initialization failed:', error);
+            // Try to recover by recreating tables
+            this.recoverDatabase();
+        }
     }
 
-    // Generic CRUD operations
+    /**
+     * Verify all required tables exist and recreate missing ones
+     */
+    verifyTables() {
+        const requiredTables = ['players', 'scores', 'sessions', 'settings', 'statistics'];
+        const missingTables = [];
+        
+        for (const table of requiredTables) {
+            const tableData = this.getItem(`${this.dbName}_${table}`);
+            if (!tableData) {
+                missingTables.push(table);
+            } else {
+                try {
+                    JSON.parse(tableData);
+                } catch (error) {
+                    console.warn(`SuperSudoku: Table ${table} is corrupted, will recreate`);
+                    missingTables.push(table);
+                }
+            }
+        }
+        
+        if (missingTables.length > 0) {
+            console.log('SuperSudoku: Recreating missing tables:', missingTables);
+            this.createMissingTables(missingTables);
+        }
+    }
+
+    /**
+     * Attempt to recover from database errors
+     */
+    recoverDatabase() {
+        console.warn('SuperSudoku: Attempting database recovery...');
+        try {
+            this.createTables();
+            this.setItem(`${this.dbName}_initialized`, 'true');
+            this.setItem(`${this.dbName}_version`, this.version);
+            console.log('SuperSudoku: Database recovery successful');
+        } catch (error) {
+            console.error('SuperSudoku: Database recovery failed:', error);
+            if (!this.isLocalStorageAvailable) {
+                console.log('SuperSudoku: Continuing with memory-only storage');
+            }
+        }
+    }
+
+    /**
+     * Create missing tables without affecting existing data
+     */
+    createMissingTables(missingTables) {
+        const tableStructures = this.getTableStructures();
+        
+        for (const tableName of missingTables) {
+            if (tableStructures[tableName]) {
+                this.setItem(`${this.dbName}_${tableName}`, JSON.stringify(tableStructures[tableName]));
+                console.log(`SuperSudoku: Recreated table: ${tableName}`);
+            }
+        }
+    }
+
+    /**
+     * Get all table structures
+     */
+    getTableStructures() {
+        return {
+            players: {
+                structure: {
+                    id: 'string',
+                    name: 'string', 
+                    email: 'string',
+                    avatar: 'string',
+                    created: 'timestamp',
+                    lastPlayed: 'timestamp',
+                    totalGames: 'number',
+                    totalWins: 'number',
+                    favoriteMode: 'string',
+                    favoriteGridSize: 'number'
+                },
+                data: []
+            },
+            scores: {
+                structure: {
+                    id: 'string',
+                    playerId: 'string',
+                    playerName: 'string',
+                    gameMode: 'string',
+                    gridSize: 'number',
+                    difficulty: 'string',
+                    time: 'number',
+                    hints: 'number',
+                    errors: 'number',
+                    score: 'number',
+                    completed: 'boolean',
+                    date: 'timestamp'
+                },
+                data: []
+            },
+            sessions: {
+                structure: {
+                    id: 'string',
+                    playerId: 'string',
+                    startTime: 'timestamp',
+                    endTime: 'timestamp',
+                    gameMode: 'string',
+                    gridSize: 'number',
+                    difficulty: 'string',
+                    gameState: 'object',
+                    completed: 'boolean'
+                },
+                data: []
+            },
+            settings: {
+                structure: {
+                    playerId: 'string',
+                    theme: 'string',
+                    soundEnabled: 'boolean',
+                    animationsEnabled: 'boolean',
+                    autoSave: 'boolean',
+                    showTimer: 'boolean',
+                    showHints: 'boolean',
+                    defaultMode: 'string',
+                    defaultGridSize: 'number',
+                    defaultDifficulty: 'string'
+                },
+                data: []
+            },
+            statistics: {
+                structure: {
+                    playerId: 'string',
+                    gameMode: 'string',
+                    gridSize: 'number',
+                    difficulty: 'string',
+                    gamesPlayed: 'number',
+                    gamesCompleted: 'number',
+                    bestTime: 'number',
+                    averageTime: 'number',
+                    totalTime: 'number',
+                    bestScore: 'number',
+                    averageScore: 'number',
+                    totalHints: 'number',
+                    totalErrors: 'number',
+                    streakCurrent: 'number',
+                    streakBest: 'number',
+                    lastPlayed: 'timestamp'
+                },
+                data: []
+            }
+        };
+    }
+
+    /**
+     * Storage abstraction - works with localStorage or fallback
+     */
+    setItem(key, value) {
+        try {
+            if (this.isLocalStorageAvailable) {
+                localStorage.setItem(key, value);
+            } else {
+                this.fallbackStorage.set(key, value);
+            }
+        } catch (error) {
+            console.warn('SuperSudoku: Storage setItem failed:', error);
+            // Try fallback even if localStorage was initially available
+            this.fallbackStorage.set(key, value);
+        }
+    }
+
+    /**
+     * Storage abstraction - works with localStorage or fallback
+     */
+    getItem(key) {
+        try {
+            if (this.isLocalStorageAvailable) {
+                return localStorage.getItem(key);
+            } else {
+                return this.fallbackStorage.get(key) || null;
+            }
+        } catch (error) {
+            console.warn('SuperSudoku: Storage getItem failed:', error);
+            return this.fallbackStorage.get(key) || null;
+        }
+    }
+
+    /**
+     * Storage abstraction - works with localStorage or fallback
+     */
+    removeItem(key) {
+        try {
+            if (this.isLocalStorageAvailable) {
+                localStorage.removeItem(key);
+            } else {
+                this.fallbackStorage.delete(key);
+            }
+        } catch (error) {
+            console.warn('SuperSudoku: Storage removeItem failed:', error);
+            this.fallbackStorage.delete(key);
+        }
+    }
+
+    /**
+     * Create all database tables with proper error handling
+     */
+    createTables() {
+        try {
+            const tableStructures = this.getTableStructures();
+            const tableNames = Object.keys(tableStructures);
+            
+            // Check if any tables already exist to avoid overwriting data
+            const existingTables = [];
+            for (const tableName of tableNames) {
+                const existingData = this.getItem(`${this.dbName}_${tableName}`);
+                if (existingData) {
+                    try {
+                        const parsed = JSON.parse(existingData);
+                        if (parsed.data && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                            existingTables.push(tableName);
+                        }
+                    } catch (e) {
+                        // Table exists but is corrupted, will be recreated
+                    }
+                }
+            }
+            
+            // Create or recreate tables
+            let tablesCreated = 0;
+            for (const [tableName, tableStructure] of Object.entries(tableStructures)) {
+                try {
+                    if (!existingTables.includes(tableName)) {
+                        this.setItem(`${this.dbName}_${tableName}`, JSON.stringify(tableStructure));
+                        tablesCreated++;
+                    } else {
+                        console.log(`SuperSudoku: Preserving existing data in table: ${tableName}`);
+                    }
+                } catch (error) {
+                    console.error(`SuperSudoku: Failed to create table ${tableName}:`, error);
+                }
+            }
+            
+            if (tablesCreated > 0) {
+                console.log(`SuperSudoku: Created ${tablesCreated} new database tables`);
+            }
+            
+            if (existingTables.length > 0) {
+                console.log(`SuperSudoku: Preserved ${existingTables.length} existing tables with data`);
+            }
+            
+        } catch (error) {
+            console.error('SuperSudoku: Failed to create database tables:', error);
+            throw error;
+        }
+    }
+
+    // Generic CRUD operations with enhanced error handling
     insert(table, data) {
         try {
-            const tableData = JSON.parse(localStorage.getItem(`${this.dbName}_${table}`));
+            const tableDataStr = this.getItem(`${this.dbName}_${table}`);
+            if (!tableDataStr) {
+                console.warn(`SuperSudoku: Table ${table} not found, creating it...`);
+                this.createMissingTables([table]);
+            }
+            
+            const tableData = JSON.parse(this.getItem(`${this.dbName}_${table}`));
+            if (!tableData || !tableData.data) {
+                throw new Error(`Invalid table structure for ${table}`);
+            }
+            
             data.id = data.id || this.generateId();
             tableData.data.push(data);
-            localStorage.setItem(`${this.dbName}_${table}`, JSON.stringify(tableData));
+            this.setItem(`${this.dbName}_${table}`, JSON.stringify(tableData));
             return data.id;
         } catch (error) {
-            console.error(`Error inserting into ${table}:`, error);
+            console.error(`SuperSudoku: Error inserting into ${table}:`, error);
             return null;
         }
     }
 
     select(table, filter = null, limit = null) {
         try {
-            const tableData = JSON.parse(localStorage.getItem(`${this.dbName}_${table}`));
+            const tableDataStr = this.getItem(`${this.dbName}_${table}`);
+            if (!tableDataStr) {
+                console.warn(`SuperSudoku: Table ${table} not found, returning empty results`);
+                return [];
+            }
+            
+            const tableData = JSON.parse(tableDataStr);
+            if (!tableData || !tableData.data || !Array.isArray(tableData.data)) {
+                console.warn(`SuperSudoku: Invalid table structure for ${table}, returning empty results`);
+                return [];
+            }
+            
             let results = tableData.data;
 
             // Apply filter if provided
@@ -151,41 +368,63 @@ class SuperSudokuDatabase {
 
             return results;
         } catch (error) {
-            console.error(`Error selecting from ${table}:`, error);
+            console.error(`SuperSudoku: Error selecting from ${table}:`, error);
             return [];
         }
     }
 
     update(table, id, updates) {
         try {
-            const tableData = JSON.parse(localStorage.getItem(`${this.dbName}_${table}`));
+            const tableDataStr = this.getItem(`${this.dbName}_${table}`);
+            if (!tableDataStr) {
+                console.warn(`SuperSudoku: Table ${table} not found for update`);
+                return false;
+            }
+            
+            const tableData = JSON.parse(tableDataStr);
+            if (!tableData || !tableData.data || !Array.isArray(tableData.data)) {
+                console.warn(`SuperSudoku: Invalid table structure for ${table}`);
+                return false;
+            }
+            
             const index = tableData.data.findIndex(item => item.id === id);
             
             if (index !== -1) {
                 tableData.data[index] = { ...tableData.data[index], ...updates };
-                localStorage.setItem(`${this.dbName}_${table}`, JSON.stringify(tableData));
+                this.setItem(`${this.dbName}_${table}`, JSON.stringify(tableData));
                 return true;
             }
             return false;
         } catch (error) {
-            console.error(`Error updating ${table}:`, error);
+            console.error(`SuperSudoku: Error updating ${table}:`, error);
             return false;
         }
     }
 
     delete(table, id) {
         try {
-            const tableData = JSON.parse(localStorage.getItem(`${this.dbName}_${table}`));
+            const tableDataStr = this.getItem(`${this.dbName}_${table}`);
+            if (!tableDataStr) {
+                console.warn(`SuperSudoku: Table ${table} not found for delete`);
+                return false;
+            }
+            
+            const tableData = JSON.parse(tableDataStr);
+            if (!tableData || !tableData.data || !Array.isArray(tableData.data)) {
+                console.warn(`SuperSudoku: Invalid table structure for ${table}`);
+                return false;
+            }
+            
             const index = tableData.data.findIndex(item => item.id === id);
             
             if (index !== -1) {
                 tableData.data.splice(index, 1);
-                localStorage.setItem(`${this.dbName}_${table}`, JSON.stringify(tableData));
+                this.setItem(`${this.dbName}_${table}`, JSON.stringify(tableData));
                 return true;
             }
             return false;
         } catch (error) {
-            console.error(`Error deleting from ${table}:`, error);
+            console.error(`SuperSudoku: Error deleting from ${table}:`, error);
             return false;
         }
     }
@@ -422,16 +661,61 @@ class SuperSudokuDatabase {
         }
     }
 
-    // Clear all data
+    // Clear all data with proper error handling
     clearAllData() {
-        const tables = ['players', 'scores', 'sessions', 'settings', 'statistics'];
-        tables.forEach(table => {
-            localStorage.removeItem(`${this.dbName}_${table}`);
-        });
-        localStorage.removeItem(`${this.dbName}_initialized`);
-        localStorage.removeItem(`${this.dbName}_version`);
+        try {
+            const tables = ['players', 'scores', 'sessions', 'settings', 'statistics'];
+            tables.forEach(table => {
+                this.removeItem(`${this.dbName}_${table}`);
+            });
+            this.removeItem(`${this.dbName}_initialized`);
+            this.removeItem(`${this.dbName}_version`);
+            
+            // Clear fallback storage as well
+            if (!this.isLocalStorageAvailable) {
+                this.fallbackStorage.clear();
+            }
+            
+            console.log('SuperSudoku: All data cleared successfully');
+            this.initDatabase();
+        } catch (error) {
+            console.error('SuperSudoku: Error clearing data:', error);
+            // Force clear fallback storage
+            this.fallbackStorage.clear();
+            this.initDatabase();
+        }
+    }
+
+    /**
+     * Get database status and statistics
+     */
+    getDatabaseStatus() {
+        const status = {
+            initialized: !!this.getItem(`${this.dbName}_initialized`),
+            version: this.getItem(`${this.dbName}_version`),
+            storageType: this.isLocalStorageAvailable ? 'localStorage' : 'memory',
+            tables: {},
+            totalRecords: 0
+        };
         
-        this.initDatabase();
+        const tables = ['players', 'scores', 'sessions', 'settings', 'statistics'];
+        for (const table of tables) {
+            try {
+                const data = this.select(table);
+                status.tables[table] = {
+                    exists: true,
+                    records: data.length
+                };
+                status.totalRecords += data.length;
+            } catch (error) {
+                status.tables[table] = {
+                    exists: false,
+                    error: error.message
+                };
+            }
+        }
+        
+        return status;
     }
 }
 

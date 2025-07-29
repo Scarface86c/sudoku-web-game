@@ -120,12 +120,6 @@ class SuperSudokuKidsMode {
             button.style.backgroundColor = color;
             button.style.border = `3px solid ${this.darkenColor(color, 20)}`;
             button.setAttribute('aria-label', `Color ${index + 1}`);
-            
-            // Add number overlay for accessibility
-            const numberOverlay = document.createElement('span');
-            numberOverlay.className = 'number-overlay';
-            numberOverlay.textContent = index + 1;
-            button.appendChild(numberOverlay);
 
             button.addEventListener('click', () => {
                 this.selectValue(index + 1, color);
@@ -149,12 +143,6 @@ class SuperSudokuKidsMode {
             button.dataset.value = index + 1;
             button.textContent = symbol;
             button.setAttribute('aria-label', `Symbol ${symbol}`);
-
-            // Add number overlay for accessibility
-            const numberOverlay = document.createElement('span');
-            numberOverlay.className = 'number-overlay';
-            numberOverlay.textContent = index + 1;
-            button.appendChild(numberOverlay);
 
             button.addEventListener('click', () => {
                 this.selectValue(index + 1, symbol);
@@ -219,7 +207,6 @@ class SuperSudokuKidsMode {
     getCellColorDisplay(value, gridSize) {
         const color = this.colors[gridSize][value - 1];
         return `<div class="color-cell" style="background-color: ${color}; border: 2px solid ${this.darkenColor(color, 30)};">
-                    <span class="color-number">${value}</span>
                 </div>`;
     }
 

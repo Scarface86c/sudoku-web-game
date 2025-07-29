@@ -479,15 +479,33 @@ class SudokuGame {
             cell.innerHTML = '';
             
             if (value !== 0) {
-                // Display number
-                const displayValue = this.formatCellValue(value);
-                cell.textContent = displayValue;
-                
-                if (isOriginal) {
-                    cell.classList.add('prefilled');
-                    cell.setAttribute('aria-label', `Prefilled ${displayValue}`);
+                // Check if kids mode is active for special display
+                if (window.SuperSudokuKidsMode && window.SuperSudokuKidsMode.isKidsMode()) {
+                    const cellDisplay = window.SuperSudokuKidsMode.getCellDisplay(value, this.gridSize);
+                    if (cellDisplay.includes('<div class="color-cell"')) {
+                        cell.innerHTML = cellDisplay;
+                        window.SuperSudokuKidsMode.applyCellStyle(cell, value, this.gridSize);
+                    } else {
+                        cell.textContent = cellDisplay;
+                    }
+                    
+                    if (isOriginal) {
+                        cell.classList.add('prefilled');
+                        cell.setAttribute('aria-label', `Prefilled color ${value}`);
+                    } else {
+                        cell.setAttribute('aria-label', `User input color ${value}`);
+                    }
                 } else {
-                    cell.setAttribute('aria-label', `User input ${displayValue}`);
+                    // Standard display for classic/symbol modes
+                    const displayValue = this.formatCellValue(value);
+                    cell.textContent = displayValue;
+                    
+                    if (isOriginal) {
+                        cell.classList.add('prefilled');
+                        cell.setAttribute('aria-label', `Prefilled ${displayValue}`);
+                    } else {
+                        cell.setAttribute('aria-label', `User input ${displayValue}`);
+                    }
                 }
             } else {
                 cell.setAttribute('aria-label', 'Empty cell');
@@ -605,9 +623,20 @@ class SudokuGame {
         this.gameBoard[index] = number;
         
         // Update display
-        const displayValue = this.formatCellValue(number);
-        cell.textContent = displayValue;
-        cell.setAttribute('aria-label', `User input ${displayValue}`);
+        if (window.SuperSudokuKidsMode && window.SuperSudokuKidsMode.isKidsMode()) {
+            const cellDisplay = window.SuperSudokuKidsMode.getCellDisplay(number, this.gridSize);
+            if (cellDisplay.includes('<div class="color-cell"')) {
+                cell.innerHTML = cellDisplay;
+                window.SuperSudokuKidsMode.applyCellStyle(cell, number, this.gridSize);
+            } else {
+                cell.textContent = cellDisplay;
+            }
+            cell.setAttribute('aria-label', `User input color ${number}`);
+        } else {
+            const displayValue = this.formatCellValue(number);
+            cell.textContent = displayValue;
+            cell.setAttribute('aria-label', `User input ${displayValue}`);
+        }
         
         // Handle validation
         if (!isValid || !isCorrect) {
@@ -761,11 +790,23 @@ class SudokuGame {
         // Update display
         const cells = this.elements.gameBoard.querySelectorAll('.game-cell');
         const cell = cells[randomIndex];
-        const displayValue = this.formatCellValue(correctValue);
         
-        cell.textContent = displayValue;
-        cell.classList.add('hint');
-        cell.setAttribute('aria-label', `Hint: ${displayValue}`);
+        if (window.SuperSudokuKidsMode && window.SuperSudokuKidsMode.isKidsMode()) {
+            const cellDisplay = window.SuperSudokuKidsMode.getCellDisplay(correctValue, this.gridSize);
+            if (cellDisplay.includes('<div class="color-cell"')) {
+                cell.innerHTML = cellDisplay;
+                window.SuperSudokuKidsMode.applyCellStyle(cell, correctValue, this.gridSize);
+            } else {
+                cell.textContent = cellDisplay;
+            }
+            cell.classList.add('hint');
+            cell.setAttribute('aria-label', `Hint: color ${correctValue}`);
+        } else {
+            const displayValue = this.formatCellValue(correctValue);
+            cell.textContent = displayValue;
+            cell.classList.add('hint');
+            cell.setAttribute('aria-label', `Hint: ${displayValue}`);
+        }
         
         // Remove hint styling after animation
         setTimeout(() => {

@@ -45,18 +45,23 @@
 
 /* ===== ISSUE #2 FIX: NUMBER PAD LAYOUT OPTIMIZATION ===== */
 .number-buttons {
-    display: flex;
+    display: flex !important; /* Override grid layout from game.css */
     flex-direction: column;
     gap: 8px;
     align-items: center;
     width: 100%;
 }
 
-.number-row {
+.number-row,
+.color-row,
+.symbol-row {
     display: flex;
     gap: 6px;
     justify-content: center;
     flex-wrap: nowrap;
+    flex-direction: row !important; /* Ensure horizontal layout overrides any inherit */
+    align-items: center;
+    width: 100%;
 }
 
 /* 9x9 Grid - Single row layout */
@@ -97,6 +102,18 @@
     padding: 8px;
 }
 
+/* Kids Mode Color Row Specific Styling */
+.color-row {
+    gap: 8px; /* Slightly larger gap for color buttons */
+    padding: 4px 0;
+}
+
+/* Symbol Mode Row Specific Styling */
+.symbol-row {
+    gap: 6px;
+    padding: 4px 0;
+}
+
 .color-btn {
     border-radius: 50% !important;
     width: 48px;
@@ -104,6 +121,10 @@
     position: relative;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transition: all 0.2s ease;
+    flex-shrink: 0; /* Prevent shrinking in flex container */
+    /* Enhanced accessibility for colorblind users */
+    border-width: 4px !important;
+    border-style: solid !important;
 }
 
 .color-btn:hover {
@@ -114,6 +135,11 @@
 .color-btn.selected {
     transform: scale(1.15);
     box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.8), 0 0 0 6px var(--primary-color);
+}
+
+/* Number overlay hidden in kids mode to show only colors */
+.mode-kids .number-overlay {
+    display: none;
 }
 
 .number-overlay {
@@ -143,11 +169,9 @@
     position: relative;
 }
 
+/* Color numbers hidden in pure kids mode */
 .color-number {
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-    font-size: 0.9em;
+    display: none;
 }
 
 .color-mode-cell {
@@ -160,6 +184,9 @@
     font-size: 1.5em;
     background: linear-gradient(135deg, #fef3c7, #fbbf24);
     border: 2px solid #d97706;
+    flex-shrink: 0; /* Prevent shrinking in flex container */
+    min-width: 48px;
+    height: 48px;
 }
 
 .symbol-btn:hover {
@@ -400,9 +427,12 @@
         max-width: 100%;
     }
     
-    .number-row {
+    .number-row,
+    .color-row,
+    .symbol-row {
         justify-content: center;
         max-width: 100%;
+        flex-direction: row; /* Maintain horizontal layout on mobile */
     }
     
     /* Responsive button sizes */
@@ -637,10 +667,10 @@
     }
 }
 
-/* High contrast mode support */
+/* High contrast mode support and colorblind accessibility */
 @media (prefers-contrast: high) {
     .color-btn {
-        border-width: 3px !important;
+        border-width: 4px !important;
     }
     
     .number-overlay {
@@ -652,4 +682,35 @@
     .theme-dark .number-btn {
         border-width: 3px;
     }
+    
+    /* Enhanced color differentiation for colorblind users */
+    .color-cell {
+        border-width: 4px !important;
+        border-style: dashed !important;
+    }
+}
+
+/* Additional colorblind accessibility improvements */
+.mode-kids .color-cell {
+    /* Add subtle patterns for better differentiation */
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 255, 255, 0.1) 10px,
+        rgba(255, 255, 255, 0.1) 20px
+    );
+}
+
+/* Enhanced focus indicators for kids mode */
+.mode-kids .game-cell:focus {
+    outline: 4px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px white, 0 0 0 6px var(--primary-color);
+}
+
+.mode-kids .color-btn:focus {
+    outline: 4px solid var(--primary-color);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 2px white, 0 0 0 8px var(--primary-color);
 }
